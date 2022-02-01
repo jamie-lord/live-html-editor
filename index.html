@@ -176,6 +176,14 @@
             setSelectedElement(_selectedElement.parentElement);
         }
 
+        function addChild() {
+            const childTagNameInput = document.getElementById("new-child-element-tag-name-input");
+            const child = document.createElement(childTagNameInput.value);
+            _selectedElement.appendChild(child);
+            setSelectedElement(child);
+            childTagNameInput.value = null;
+        }
+
         window.onload = init;
     </script>
 </head>
@@ -195,6 +203,11 @@
             <h1>Children</h1>
             <ul id="selected-element-children-list"></ul>
             <button id="goto-parent-button" onclick="gotoParent()" disabled>Goto parent</button>
+
+            <h2>Add new child</h2>
+            <label for="new-child-element-tag-name">Child tag name</label>
+            <input type="text" id="new-child-element-tag-name-input" name="new-child-element-tag-name">
+            <button onclick="addChild()">Add child</button>
         </div>
         <iframe class="flex-right" id="content-frame"></iframe>
     </div>
