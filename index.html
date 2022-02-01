@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Live HTML editor</title>
+
+    <style>
+        .flex-container {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .flex-left {
+            width: 25%;
+            height: 100vh;
+            margin: 5px;
+            padding: 5px;
+            border: 2px solid red;
+        }
+
+        .flex-right {
+            width: 75%;
+            margin: 5px;
+            padding: 5px;
+            border: 2px solid green;
+        }
+    </style>
+
+    <script>
+        const html = `
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Example page</title>
+</head>
+<body>
+<h1>This is only a test</h1>
+<p >Hello there!</p>
+<a href="https://news.ycombinator.com/news">Hacker News</a> 
+</body>
+</html>`;
+
+        let selectedElementPropertiesList;
+
+        function init() {
+            const selectedElementName = document.getElementById("selected-element-name");
+            selectedElementPropertiesList = document.getElementById("selected-element-properties-list");
+            let iframe = document.getElementById("content-frame");
+            // Load content into iframe
+            iframe.contentWindow.document.write(html);
+            // Make content editable
+            iframe.contentDocument.getElementsByTagName("html")[0].setAttribute("contenteditable", "true");
+            iframe.contentDocument.addEventListener("click", (event) => {
+                console.log(event);
+                selectedElementName.textContent = event.target.tagName;
+                // remove all children from properties container
+                while (selectedElementPropertiesList.lastChild) {
+                    selectedElementPropertiesList.removeChild(selectedElementPropertiesList.lastChild);
+                }
+
+                addAttributeToPropertiesList(event.target, "textContent", event.target.textContent);
+
+                for (let i = 0; i < event.target.attributes.length; i++) {
+                    const attribute = event.target.attributes.item(i);
+                    addAttributeToPropertiesList(event.target, attribute.name, attribute.value);
+                }
+            });
+        }
+
+        function addAttributeToPropertiesList(element, attributeName, attributeValue) {
+            const li = document.createElement("li");
+            const label = document.createElement("label");
+            label.textContent = attributeName;
+            const input = document.createElement("input");
+            input.type = "text";
+            input.value = attributeValue;
+            input.addEventListener("input", (valInput) => {
+                // Update the content value
+                if (attributeName === "textContent") {
+                    element.textContent = valInput.target.value;
+                } else {
+                    element.setAttribute(attributeName, valInput.target.value);
+                }
+            });
+
+            li.appendChild(label);
+            li.appendChild(input);
+            selectedElementPropertiesList.appendChild(li);
+        }
+
+        window.onload = init;
+    </script>
+</head>
+
+<body>
+    <div class="flex-container">
+        <div class="flex-left">
+            <h1 id="selected-element-name">No element selected</h1>
+            <ul id="selected-element-properties-list">
+            </ul>
+        </div>
+        <iframe class="flex-right" id="content-frame"></iframe>
+    </div>
+</body>
+
+</html>
