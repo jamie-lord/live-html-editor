@@ -36,7 +36,17 @@
 <body>
 <h1>This is only a test</h1>
 <p >Hello there!</p>
-<a href="https://news.ycombinator.com/news">Hacker News</a> 
+<a href="https://news.ycombinator.com/news">Hacker News</a>
+<div>
+<h2>A subheading</h2>
+<ol>
+<li>😍</li>
+<li>🍕</li>
+<li>🐈‍⬛</li>
+<li>🎉</li>
+<li>👏</li>
+</ol>
+</div>
 </body>
 </html>`;
 
@@ -114,7 +124,7 @@
             } else {
                 for (let i = 0; i < _selectedElement.children.length; i++) {
                     const child = _selectedElement.children[i];
-                    addChildToChildrenList(child);
+                    addChildToChildrenList(child, _selectedElementChildrenList);
                 }
             }
 
@@ -168,13 +178,21 @@
             valueInput.value = null;
         }
 
-        function addChildToChildrenList(element) {
+        function addChildToChildrenList(element, listElement) {
             const li = document.createElement("li");
             li.textContent = element.tagName;
             li.addEventListener("click", (event) => {
                 setSelectedElement(element);
             });
-            _selectedElementChildrenList.appendChild(li);
+            listElement.appendChild(li);
+            if (element.children.length > 0) {
+                const childList = document.createElement("ul");
+                for (let i = 0; i < element.children.length; i++) {
+                    const childElement = element.children[i];
+                    addChildToChildrenList(childElement, childList);
+                }
+                listElement.appendChild(childList);
+            }
         }
 
         function gotoParent() {
