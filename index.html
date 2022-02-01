@@ -40,53 +40,81 @@
 </body>
 </html>`;
 
-        let selectedElementPropertiesList;
-        let selectedElementChildrenList;
-        let selectedElement;
+        let _selectedElementPropertiesList;
+        let _selectedElementChildrenList;
+        let _selectedElement;
+        let _selectedElementObserver;
 
         function init() {
-            const selectedElementName = document.getElementById("selected-element-name");
-            selectedElementPropertiesList = document.getElementById("selected-element-properties-list");
-            selectedElementChildrenList = document.getElementById("selected-element-children-list");
+            _selectedElementPropertiesList = document.getElementById("selected-element-properties-list");
+            _selectedElementChildrenList = document.getElementById("selected-element-children-list");
             let iframe = document.getElementById("content-frame");
             // Load content into iframe
             iframe.contentWindow.document.write(html);
             // Make content editable
-            iframe.contentDocument.getElementsByTagName("html")[0].setAttribute("contenteditable", "true");
+            const rootElement = iframe.contentDocument.documentElement;
+            rootElement.setAttribute("contenteditable", "true");
             iframe.contentDocument.addEventListener("click", (event) => {
-                removeElementHighlight(selectedElement);
-                selectedElement = event.target;
-                highlightElement(selectedElement);
-                selectedElementName.textContent = selectedElement.tagName;
-                // remove all children from properties list
-                while (selectedElementPropertiesList.lastChild) {
-                    selectedElementPropertiesList.removeChild(selectedElementPropertiesList.lastChild);
-                }
-
-                // Remove all children from the children list
-                while (selectedElementChildrenList.lastChild) {
-                    selectedElementChildrenList.removeChild(selectedElementChildrenList.lastChild);
-                }
-
-                addAttributeToPropertiesList(selectedElement, "textContent", selectedElement.textContent);
-
-                for (let i = 0; i < selectedElement.attributes.length; i++) {
-                    const attribute = selectedElement.attributes.item(i);
-                    addAttributeToPropertiesList(selectedElement, attribute.name, attribute.value);
-                }
-
-                // List children
-                if (selectedElement.children.length === 0) {
-                    const li = document.createElement("li");
-                    li.textContent = "Selected element has no children";
-                    selectedElementChildrenList.appendChild(li);
-                } else {
-                    for (let i = 0; i < selectedElement.children.length; i++) {
-                        const child = selectedElement.children[i];
-                        addChildToChildrenList(child);
-                    }
-                }
+                setSelectedElement(event.target);
             });
+        }
+
+        function setSelectedElement(element) {
+            removeElementHighlight(_selectedElement);
+            if (_selectedElementObserver != null) {
+                _selectedElementObserver.disconnect();
+            }
+
+            _selectedElement = element;
+            highlightElement(_selectedElement);
+
+            // Watch for changes
+            _selectedElementObserver = new MutationObserver((records, observer) => {
+                console.log(records);
+                updateSelectedElementProperties();
+            });
+            const config = { attributes: true, childList: true, subtree: true, characterData: true };
+            _selectedElementObserver.observe(_selectedElement, config);
+
+            updateSelectedElementProperties();
+        }
+
+        function updateSelectedElementProperties() {
+            const activeElementId = document.activeElement.id;
+
+            document.getElementById("selected-element-name").textContent = _selectedElement.tagName;
+            // remove all children from properties list
+            while (_selectedElementPropertiesList.lastChild) {
+                _selectedElementPropertiesList.removeChild(_selectedElementPropertiesList.lastChild);
+            }
+
+            // Remove all children from the children list
+            while (_selectedElementChildrenList.lastChild) {
+                _selectedElementChildrenList.removeChild(_selectedElementChildrenList.lastChild);
+            }
+
+            addAttributeToPropertiesList(_selectedElement, "textContent", _selectedElement.textContent, "textContent");
+
+            for (let i = 0; i < _selectedElement.attributes.length; i++) {
+                const attribute = _selectedElement.attributes.item(i);
+                addAttributeToPropertiesList(_selectedElement, attribute.name, attribute.value, i);
+            }
+
+            // List children
+            if (_selectedElement.children.length === 0) {
+                const li = document.createElement("li");
+                li.textContent = "Selected element has no children";
+                _selectedElementChildrenList.appendChild(li);
+            } else {
+                for (let i = 0; i < _selectedElement.children.length; i++) {
+                    const child = _selectedElement.children[i];
+                    addChildToChildrenList(child);
+                }
+            }
+
+            if (activeElementId) {
+                document.getElementById(activeElementId).focus();
+            }
         }
 
         function highlightElement(element) {
@@ -100,11 +128,12 @@
             element.style.backgroundColor = "transparent";
         }
 
-        function addAttributeToPropertiesList(element, attributeName, attributeValue) {
+        function addAttributeToPropertiesList(element, attributeName, attributeValue, id) {
             const li = document.createElement("li");
             const label = document.createElement("label");
             label.textContent = attributeName;
             const input = document.createElement("input");
+            input.id = `property_input_${id}`;
             input.type = "text";
             input.value = attributeValue;
             input.addEventListener("input", (valInput) => {
@@ -118,13 +147,13 @@
 
             li.appendChild(label);
             li.appendChild(input);
-            selectedElementPropertiesList.appendChild(li);
+            _selectedElementPropertiesList.appendChild(li);
         }
 
         function addAttribute() {
             const nameInput = document.getElementById("attribute-name-input");
             const valueInput = document.getElementById("attribute-value-input");
-            selectedElement.setAttribute(nameInput.value, valueInput.value);
+            _selectedElement.setAttribute(nameInput.value, valueInput.value);
             nameInput.value = null;
             valueInput.value = null;
         }
@@ -132,7 +161,7 @@
         function addChildToChildrenList(element) {
             const li = document.createElement("li");
             li.textContent = element.tagName;
-            selectedElementChildrenList.appendChild(li);
+            _selectedElementChildrenList.appendChild(li);
         }
 
         window.onload = init;
