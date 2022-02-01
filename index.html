@@ -41,30 +41,63 @@
 </html>`;
 
         let selectedElementPropertiesList;
+        let selectedElementChildrenList;
+        let selectedElement;
 
         function init() {
             const selectedElementName = document.getElementById("selected-element-name");
             selectedElementPropertiesList = document.getElementById("selected-element-properties-list");
+            selectedElementChildrenList = document.getElementById("selected-element-children-list");
             let iframe = document.getElementById("content-frame");
             // Load content into iframe
             iframe.contentWindow.document.write(html);
             // Make content editable
             iframe.contentDocument.getElementsByTagName("html")[0].setAttribute("contenteditable", "true");
             iframe.contentDocument.addEventListener("click", (event) => {
-                console.log(event);
-                selectedElementName.textContent = event.target.tagName;
-                // remove all children from properties container
+                removeElementHighlight(selectedElement);
+                selectedElement = event.target;
+                highlightElement(selectedElement);
+                selectedElementName.textContent = selectedElement.tagName;
+                // remove all children from properties list
                 while (selectedElementPropertiesList.lastChild) {
                     selectedElementPropertiesList.removeChild(selectedElementPropertiesList.lastChild);
                 }
 
-                addAttributeToPropertiesList(event.target, "textContent", event.target.textContent);
+                // Remove all children from the children list
+                while (selectedElementChildrenList.lastChild) {
+                    selectedElementChildrenList.removeChild(selectedElementChildrenList.lastChild);
+                }
 
-                for (let i = 0; i < event.target.attributes.length; i++) {
-                    const attribute = event.target.attributes.item(i);
-                    addAttributeToPropertiesList(event.target, attribute.name, attribute.value);
+                addAttributeToPropertiesList(selectedElement, "textContent", selectedElement.textContent);
+
+                for (let i = 0; i < selectedElement.attributes.length; i++) {
+                    const attribute = selectedElement.attributes.item(i);
+                    addAttributeToPropertiesList(selectedElement, attribute.name, attribute.value);
+                }
+
+                // List children
+                if (selectedElement.children.length === 0) {
+                    const li = document.createElement("li");
+                    li.textContent = "Selected element has no children";
+                    selectedElementChildrenList.appendChild(li);
+                } else {
+                    for (let i = 0; i < selectedElement.children.length; i++) {
+                        const child = selectedElement.children[i];
+                        addChildToChildrenList(child);
+                    }
                 }
             });
+        }
+
+        function highlightElement(element) {
+            element.style.backgroundColor = "red";
+        }
+
+        function removeElementHighlight(element) {
+            if (element == null) {
+                return;
+            }
+            element.style.backgroundColor = "transparent";
         }
 
         function addAttributeToPropertiesList(element, attributeName, attributeValue) {
@@ -88,6 +121,20 @@
             selectedElementPropertiesList.appendChild(li);
         }
 
+        function addAttribute() {
+            const nameInput = document.getElementById("attribute-name-input");
+            const valueInput = document.getElementById("attribute-value-input");
+            selectedElement.setAttribute(nameInput.value, valueInput.value);
+            nameInput.value = null;
+            valueInput.value = null;
+        }
+
+        function addChildToChildrenList(element) {
+            const li = document.createElement("li");
+            li.textContent = element.tagName;
+            selectedElementChildrenList.appendChild(li);
+        }
+
         window.onload = init;
     </script>
 </head>
@@ -96,8 +143,16 @@
     <div class="flex-container">
         <div class="flex-left">
             <h1 id="selected-element-name">No element selected</h1>
-            <ul id="selected-element-properties-list">
-            </ul>
+            <ul id="selected-element-properties-list"></ul>
+
+            <label for="attribute-name">Attribute name</label>
+            <input type="text" id="attribute-name-input" name="attribute-name">
+            <label for="attribute-value">Attribute value</label>
+            <input type="text" id="attribute-value-input" name="attribute-value">
+            <button onclick="addAttribute()">Add attribute</button>
+
+            <h1>Children</h1>
+            <ul id="selected-element-children-list"></ul>
         </div>
         <iframe class="flex-right" id="content-frame"></iframe>
     </div>
