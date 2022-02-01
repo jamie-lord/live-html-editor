@@ -44,6 +44,7 @@
         let _selectedElementChildrenList;
         let _selectedElement;
         let _selectedElementObserver;
+        let _selectedElementOriginalBackgroundImage;
 
         function init() {
             _selectedElementPropertiesList = document.getElementById("selected-element-properties-list");
@@ -60,13 +61,13 @@
         }
 
         function setSelectedElement(element) {
-            removeElementHighlight(_selectedElement);
+            removeSelectedElementHighlight();
             if (_selectedElementObserver) {
                 _selectedElementObserver.disconnect();
             }
 
             _selectedElement = element;
-            highlightElement(_selectedElement);
+            highlightSelectedElement();
             if (_selectedElement.parentElement) {
                 document.getElementById("goto-parent-button").disabled = false;
             } else {
@@ -122,15 +123,19 @@
             }
         }
 
-        function highlightElement(element) {
-            element.style.backgroundColor = "red";
+        function highlightSelectedElement() {
+            _selectedElementOriginalBackgroundImage = _selectedElement.style.backgroundImage;
+            _selectedElement.style.backgroundImage = `linear-gradient(90deg, hsl(0deg 100% 54%) 0%, hsl(282deg 100% 52%) 50%, hsl(203deg 100% 50%) 100%)`;
         }
 
-        function removeElementHighlight(element) {
-            if (element == null) {
+        function removeSelectedElementHighlight() {
+            if (!_selectedElement) {
                 return;
             }
-            element.style.backgroundColor = "transparent";
+            _selectedElement.style.backgroundImage = _selectedElementOriginalBackgroundImage;
+            if (_selectedElement.style === "" || _selectedElement.style.length === 0) {
+                _selectedElement.removeAttribute("style");
+            }
         }
 
         function addAttributeToPropertiesList(element, attributeName, attributeValue, id) {
