@@ -61,12 +61,17 @@
 
         function setSelectedElement(element) {
             removeElementHighlight(_selectedElement);
-            if (_selectedElementObserver != null) {
+            if (_selectedElementObserver) {
                 _selectedElementObserver.disconnect();
             }
 
             _selectedElement = element;
             highlightElement(_selectedElement);
+            if (_selectedElement.parentElement) {
+                document.getElementById("goto-parent-button").disabled = false;
+            } else {
+                document.getElementById("goto-parent-button").disabled = true;
+            }
 
             // Watch for changes
             _selectedElementObserver = new MutationObserver((records, observer) => {
@@ -161,7 +166,14 @@
         function addChildToChildrenList(element) {
             const li = document.createElement("li");
             li.textContent = element.tagName;
+            li.addEventListener("click", (event) => {
+                setSelectedElement(element);
+            });
             _selectedElementChildrenList.appendChild(li);
+        }
+
+        function gotoParent() {
+            setSelectedElement(_selectedElement.parentElement);
         }
 
         window.onload = init;
@@ -182,6 +194,7 @@
 
             <h1>Children</h1>
             <ul id="selected-element-children-list"></ul>
+            <button id="goto-parent-button" onclick="gotoParent()" disabled>Goto parent</button>
         </div>
         <iframe class="flex-right" id="content-frame"></iframe>
     </div>
