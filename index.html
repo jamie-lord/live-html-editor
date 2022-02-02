@@ -71,10 +71,13 @@
             // Load content into iframe
             iframe.contentWindow.document.write(html);
             // Make content editable
-            const rootElement = iframe.contentDocument.documentElement;
-            rootElement.setAttribute("contenteditable", "true");
             iframe.contentDocument.addEventListener("click", (event) => {
                 setSelectedElement(event.target);
+            });
+            iframe.contentDocument.addEventListener("keydown", (event) => {
+                if (event.key.toUpperCase() === "ENTER") {
+                    event.preventDefault();
+                }
             });
         }
 
@@ -83,8 +86,12 @@
             if (_selectedElementObserver) {
                 _selectedElementObserver.disconnect();
             }
+            if (_selectedElement) {
+                _selectedElement.removeAttribute("contenteditable");
+            }
 
             _selectedElement = element;
+            _selectedElement.setAttribute("contenteditable", "true");
             highlightSelectedElement();
             if (_selectedElement.parentElement) {
                 document.getElementById("goto-parent-button").disabled = false;
