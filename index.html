@@ -178,9 +178,13 @@
             valueInput.value = null;
         }
 
+        const childListShowTitleTags = ["TITLE", "H1", "H2"];
         function addChildToChildrenList(element, listElement) {
             const li = document.createElement("li");
             li.textContent = element.tagName;
+            if (childListShowTitleTags.includes(element.tagName.toUpperCase()) || (element.children.length === 0 && element.textContent)) {
+                li.textContent = li.textContent + `: ${element.textContent}`;
+            }
             li.addEventListener("click", (event) => {
                 setSelectedElement(element);
             });
