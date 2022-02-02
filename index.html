@@ -77,7 +77,36 @@
             iframe.contentDocument.addEventListener("keydown", (event) => {
                 if (event.key.toUpperCase() === "ENTER") {
                     event.preventDefault();
+                    addSibling();
+                } else if (event.key.toUpperCase() === "BACKSPACE") {
+                    // No more characters in the selected element, remote it
+                    if (!_selectedElement.textContent) {
+                        event.preventDefault();
+                        const e = _selectedElement;
+                        if (_selectedElement.nextElementSibling) {
+                            setSelectedElement(_selectedElement.nextElementSibling);
+                        } else {
+                            setSelectedElement(_selectedElement.parentElement);
+                        }
+                        e.remove();
+                        updateSelectedElementProperties();
+                    }
+                } else if (event.key.toUpperCase() === "ARROWUP") {
+                    if (_selectedElement.previousElementSibling) {
+                        setSelectedElement(_selectedElement.previousElementSibling);
+                    } else {
+                        setSelectedElement(_selectedElement.parentElement);
+                    }
+                } else if (event.key.toUpperCase() === "ARROWDOWN") {
+                    if (_selectedElement.children.length > 0) {
+                        setSelectedElement(_selectedElement.children[0]);
+                    } else if (_selectedElement.nextElementSibling) {
+                        setSelectedElement(_selectedElement.nextElementSibling);
+                    } else {
+                        setSelectedElement(_selectedElement.parentElement);
+                    }
                 }
+                console.log(event);
             });
         }
 
@@ -101,13 +130,13 @@
 
             // Watch for changes
             _selectedElementObserver = new MutationObserver((records, observer) => {
-                console.log(records);
                 updateSelectedElementProperties();
             });
             const config = { attributes: true, childList: true, subtree: true, characterData: true };
             _selectedElementObserver.observe(_selectedElement, config);
 
             updateSelectedElementProperties();
+            _selectedElement.focus();
         }
 
         function updateSelectedElementProperties() {
@@ -238,6 +267,24 @@
             _selectedElement.appendChild(child);
             setSelectedElement(child);
             childTagNameInput.value = null;
+        }
+
+        function addSibling() {
+            let newElement;
+            switch (_selectedElement.tagName.toUpperCase()) {
+                case "LI":
+                    newElement = document.createElement("li");
+                    break;
+                default:
+                    newElement = document.createElement("p");
+                    break;
+            }
+            if (_selectedElement.nextSibling) {
+                _selectedElement.parentElement.insertBefore(newElement, _selectedElement.nextSibling);
+            } else {
+                _selectedElement.parentElement.appendChild(newElement);
+            }
+            setSelectedElement(newElement);
         }
 
         window.onload = init;
