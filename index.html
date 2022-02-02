@@ -15,14 +15,18 @@
             height: 100vh;
             margin: 5px;
             padding: 5px;
-            border: 2px solid red;
         }
 
         .flex-right {
             width: 75%;
             margin: 5px;
             padding: 5px;
-            border: 2px solid green;
+        }
+
+        ul.no-bullets {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
         }
     </style>
 
@@ -180,14 +184,26 @@
 
         const childListShowTitleTags = ["TITLE", "H1", "H2"];
         function addChildToChildrenList(element, listElement) {
-            const li = document.createElement("li");
-            li.textContent = element.tagName;
+            const p = document.createElement("p");
+            p.textContent = element.tagName;
             if (childListShowTitleTags.includes(element.tagName.toUpperCase()) || (element.children.length === 0 && element.textContent)) {
-                li.textContent = li.textContent + `: ${element.textContent}`;
+                p.textContent = p.textContent + `: ${element.textContent}`;
             }
-            li.addEventListener("click", (event) => {
+            const setSelectedButton = document.createElement("button");
+            setSelectedButton.textContent = "Select";
+            setSelectedButton.addEventListener("click", (event) => {
                 setSelectedElement(element);
             });
+            const deleteElementButton = document.createElement("button");
+            deleteElementButton.textContent = "Delete";
+            deleteElementButton.addEventListener("click", (event) => {
+                element.remove();
+                updateSelectedElementProperties();
+            });
+            const li = document.createElement("li");
+            li.appendChild(p);
+            li.appendChild(setSelectedButton);
+            li.appendChild(deleteElementButton);
             listElement.appendChild(li);
             if (element.children.length > 0) {
                 const childList = document.createElement("ul");
@@ -219,7 +235,7 @@
     <div class="flex-container">
         <div class="flex-left">
             <h1 id="selected-element-name">No element selected</h1>
-            <ul id="selected-element-properties-list"></ul>
+            <ul id="selected-element-properties-list" class="no-bullets"></ul>
 
             <label for="attribute-name">Attribute name</label>
             <input type="text" id="attribute-name-input" name="attribute-name">
@@ -228,7 +244,7 @@
             <button onclick="addAttribute()">Add attribute</button>
 
             <h1>Children</h1>
-            <ul id="selected-element-children-list"></ul>
+            <ul id="selected-element-children-list" class="no-bullets"></ul>
             <button id="goto-parent-button" onclick="gotoParent()" disabled>Goto parent</button>
 
             <h2>Add new child</h2>
