@@ -23,6 +23,10 @@
             padding: 5px;
         }
 
+        #selected-element-properties-list {
+            margin-top: 2rem;
+        }
+
         ul.no-bullets {
             list-style-type: none;
             padding: 0;
@@ -185,6 +189,7 @@
         const childListShowTitleTags = ["TITLE", "H1", "H2"];
         function addChildToChildrenList(element, listElement) {
             const p = document.createElement("p");
+            p.style.flexGrow = 1;
             p.textContent = element.tagName;
             if (childListShowTitleTags.includes(element.tagName.toUpperCase()) || (element.children.length === 0 && element.textContent)) {
                 p.textContent = p.textContent + `: ${element.textContent}`;
@@ -195,12 +200,13 @@
                 setSelectedElement(element);
             });
             const deleteElementButton = document.createElement("button");
-            deleteElementButton.textContent = "Delete";
+            deleteElementButton.textContent = "❌";
             deleteElementButton.addEventListener("click", (event) => {
                 element.remove();
                 updateSelectedElementProperties();
             });
             const li = document.createElement("li");
+            li.style.display = "flex";
             li.appendChild(p);
             li.appendChild(setSelectedButton);
             li.appendChild(deleteElementButton);
@@ -235,6 +241,8 @@
     <div class="flex-container">
         <div class="flex-left">
             <h1 id="selected-element-name">No element selected</h1>
+            <button id="goto-parent-button" onclick="gotoParent()" disabled>⤴️ Goto parent</button>
+
             <ul id="selected-element-properties-list" class="no-bullets"></ul>
 
             <label for="attribute-name">Attribute name</label>
@@ -245,7 +253,6 @@
 
             <h1>Children</h1>
             <ul id="selected-element-children-list" class="no-bullets"></ul>
-            <button id="goto-parent-button" onclick="gotoParent()" disabled>Goto parent</button>
 
             <h2>Add new child</h2>
             <label for="new-child-element-tag-name">Child tag name</label>
