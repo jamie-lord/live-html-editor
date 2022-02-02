@@ -110,6 +110,8 @@
             });
         }
 
+        /* List taken from https://stackoverflow.com/a/7130146 */
+        const textAllowedElements = ["TT", "I", "B", "BIG", "SMALL", "EM", "STRONG", "DFN", "CODE", "SAMP", "KBD", "VAR", "CITE", "ABBR", "ACRONYM", "SUB", "SUP", "SPAN", "BDO", "ADDRESS", "DIV", "A", "OBJECT", "P", "H1", "H2", "H3", "H4", "H5", "H6", "PRE", "Q", "INS", "DEL", "DT", "DD", "LI", "LABEL", "OPTION", "TEXTAREA", "FIELDSET", "LEGEND", "BUTTON", "CAPTION", "TD", "TH", "TITLE", "SCRIPT", "STYLE", "BLOCKQUOTE"];
         function setSelectedElement(element) {
             removeSelectedElementHighlight();
             if (_selectedElementObserver) {
@@ -120,7 +122,6 @@
             }
 
             _selectedElement = element;
-            _selectedElement.setAttribute("contenteditable", "true");
             highlightSelectedElement();
             if (_selectedElement.parentElement) {
                 document.getElementById("goto-parent-button").disabled = false;
@@ -135,8 +136,12 @@
             const config = { attributes: true, childList: true, subtree: true, characterData: true };
             _selectedElementObserver.observe(_selectedElement, config);
 
+            // Allow direct editing of text content
+            if (textAllowedElements.includes(_selectedElement.tagName.toUpperCase())) {
+                _selectedElement.setAttribute("contenteditable", "true");
+                _selectedElement.focus();
+            }
             updateSelectedElementProperties();
-            _selectedElement.focus();
         }
 
         function updateSelectedElementProperties() {
@@ -153,7 +158,10 @@
                 _selectedElementChildrenList.removeChild(_selectedElementChildrenList.lastChild);
             }
 
-            addAttributeToPropertiesList(_selectedElement, "textContent", _selectedElement.textContent, "textContent");
+            // Only show textContent as property if element type is on allow list
+            if (textAllowedElements.includes(_selectedElement.tagName.toUpperCase())) {
+                addAttributeToPropertiesList(_selectedElement, "textContent", _selectedElement.textContent, "textContent");
+            }
 
             for (let i = 0; i < _selectedElement.attributes.length; i++) {
                 const attribute = _selectedElement.attributes.item(i);
