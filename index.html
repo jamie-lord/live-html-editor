@@ -108,6 +108,25 @@
                 }
                 console.log(event);
             });
+            document.getElementById("turn-into-select").addEventListener("change", (event) => {
+                // Reset highlight first so new element doesn't have permanent highlight
+                removeSelectedElementHighlight();
+                var newElement = document.createElement(event.target.value),
+                    oldAttributes = _selectedElement.attributes,
+                    newAttributes = newElement.attributes;
+
+                for (var i = 0, len = oldAttributes.length; i < len; i++) {
+                    newAttributes.setNamedItem(oldAttributes.item(i).cloneNode());
+                }
+
+                do {
+                    newElement.appendChild(_selectedElement.firstChild);
+                }
+                while (_selectedElement.firstChild);
+
+                _selectedElement.parentNode.replaceChild(newElement, _selectedElement);
+                setSelectedElement(newElement);
+            });
         }
 
         /* List taken from https://stackoverflow.com/a/7130146 */
@@ -142,6 +161,7 @@
                 _selectedElement.focus();
             }
             updateSelectedElementProperties();
+            updateTurnIntoOptions();
         }
 
         function updateSelectedElementProperties() {
@@ -183,6 +203,18 @@
             if (activeElementId) {
                 document.getElementById(activeElementId).focus();
             }
+        }
+
+        function updateTurnIntoOptions() {
+            const select = document.getElementById("turn-into-select");
+            select.options.length = 0;
+            textAllowedElements.forEach((e) => {
+                const option = document.createElement("option");
+                option.value = e;
+                option.textContent = e;
+                select.appendChild(option);
+            });
+            select.value = _selectedElement.tagName;
         }
 
         function highlightSelectedElement() {
@@ -239,7 +271,7 @@
                 p.textContent = p.textContent + `: ${element.textContent}`;
             }
             const setSelectedButton = document.createElement("button");
-            setSelectedButton.textContent = "Select";
+            setSelectedButton.textContent = "🔍";
             setSelectedButton.addEventListener("click", (event) => {
                 setSelectedElement(element);
             });
@@ -304,6 +336,8 @@
         <div class="flex-left">
             <h1 id="selected-element-name">No element selected</h1>
             <button id="goto-parent-button" onclick="gotoParent()" disabled>⤴️ Goto parent</button>
+            <label for="turn-into-select">Turn into</label>
+            <select id="turn-into-select"></select>
 
             <ul id="selected-element-properties-list" class="no-bullets"></ul>
 
