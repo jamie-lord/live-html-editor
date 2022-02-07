@@ -231,7 +231,18 @@
                     } else if (_selectedElement.nextElementSibling) {
                         setSelectedElement(_selectedElement.nextElementSibling);
                     } else {
-                        setSelectedElement(_selectedElement.parentElement);
+                        let parent = _selectedElement.parentElement;
+                        while (parent.nextElementSibling === null) {
+                            if (parent.parentElement) {
+                                parent = parent.parentElement;
+                            } else {
+                                // This is the last child element in the document
+                                break;
+                            }
+                        }
+                        if (parent.nextElementSibling) {
+                            setSelectedElement(parent.nextElementSibling);
+                        }
                     }
                 }
                 console.log(event);
